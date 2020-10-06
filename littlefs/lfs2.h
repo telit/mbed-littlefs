@@ -68,23 +68,24 @@ typedef uint32_t lfs2_block_t;
 
 // Possible error codes, these are negative to allow
 // valid positive return values
-enum lfs2_error {
+typedef enum lfs2_error {
     LFS2_ERR_OK          = 0,    // No error
-    LFS2_ERR_IO          = -5,   // Error during device operation
-    LFS2_ERR_CORRUPT     = -84,  // Corrupted
+	LFS2_ERR_GENERIC 	 = -1,   //Generic error
     LFS2_ERR_NOENT       = -2,   // No directory entry
+    LFS2_ERR_IO          = -5,   // Error during device operation
+    LFS2_ERR_BADF        = -9,   // Bad file number
+    LFS2_ERR_NOMEM       = -12,  // No more memory available
     LFS2_ERR_EXIST       = -17,  // Entry already exists
     LFS2_ERR_NOTDIR      = -20,  // Entry is not a dir
     LFS2_ERR_ISDIR       = -21,  // Entry is a dir
-    LFS2_ERR_NOTEMPTY    = -39,  // Dir is not empty
-    LFS2_ERR_BADF        = -9,   // Bad file number
-    LFS2_ERR_FBIG        = -27,  // File too large
     LFS2_ERR_INVAL       = -22,  // Invalid parameter
+    LFS2_ERR_FBIG        = -27,  // File too large
     LFS2_ERR_NOSPC       = -28,  // No space left on device
-    LFS2_ERR_NOMEM       = -12,  // No more memory available
-    LFS2_ERR_NOATTR      = -61,  // No data/attr available
     LFS2_ERR_NAMETOOLONG = -36,  // File name too long
-};
+    LFS2_ERR_NOTEMPTY    = -39,  // Dir is not empty
+    LFS2_ERR_NOATTR      = -61,  // No data/attr available
+    LFS2_ERR_CORRUPT     = -84,  // Corrupted
+} LFS2_ERROR_T;
 
 // File types
 enum lfs2_type {
@@ -326,16 +327,20 @@ typedef struct lfs2_dir {
 } lfs2_dir_t;
 
 // littlefs file type
+struct lfs2_ctz {
+    lfs2_block_t head;
+    lfs2_size_t size;
+};
+
+// littlefs file type
 typedef struct lfs2_file {
     struct lfs2_file *next;
     uint16_t id;
     uint8_t type;
     lfs2_mdir_t m;
 
-    struct lfs2_ctz {
-        lfs2_block_t head;
-        lfs2_size_t size;
-    } ctz;
+    //prevent 'lfs2_file_t' has no member named 'ctz'
+	struct lfs2_ctz ctz;
 
     uint32_t flags;
     lfs2_off_t pos;
@@ -360,18 +365,24 @@ typedef struct lfs2_gstate {
     lfs2_block_t pair[2];
 } lfs2_gstate_t;
 
+
+// The littlefs filesystem type
+struct lfs2_mlist {
+    struct lfs2_mlist *next;
+    uint16_t id;
+    uint8_t type;
+    lfs2_mdir_t m;
+};
+
 // The littlefs filesystem type
 typedef struct lfs2 {
     lfs2_cache_t rcache;
     lfs2_cache_t pcache;
 
     lfs2_block_t root[2];
-    struct lfs2_mlist {
-        struct lfs2_mlist *next;
-        uint16_t id;
-        uint8_t type;
-        lfs2_mdir_t m;
-    } *mlist;
+
+    struct lfs2_mlist *mlist;
+
     uint32_t seed;
 
     lfs2_gstate_t gstate;
@@ -417,6 +428,9 @@ int lfs2_format(lfs2_t *lfs2, const struct lfs2_config *config);
 //
 // Returns a negative error code on failure.
 int lfs2_mount(lfs2_t *lfs2, const struct lfs2_config *config);
+
+//Print information
+void lfs2_log_info(lfs2_t *lfs, const struct lfs2_config *cfg);
 
 // Unmounts a littlefs
 //
