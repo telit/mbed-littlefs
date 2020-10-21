@@ -1416,31 +1416,10 @@ static int lfs2_dir_drop(lfs2_t *lfs2, lfs2_mdir_t *dir, lfs2_mdir_t *tail) {
 	// steal tail
 	lfs2_pair_tole32(tail->tail);
 
-
-//    LFS2_MKTAG(type, id, size) \
-//    (((lfs2_tag_t)(type) << 20) | ((lfs2_tag_t)(id) << 10) | (lfs2_tag_t)(size))
-
-//	  LFS2_MKATTRS(...) \
-//    (struct lfs2_mattr[]){__VA_ARGS__}, \
-//    sizeof((struct lfs2_mattr[]){__VA_ARGS__}) / sizeof(struct lfs2_mattr)
-
-//	static int lfs2_dir_commit(lfs2_t *lfs2, lfs2_mdir_t *dir,
-//			const struct lfs2_mattr *attrs, int attrcount)
-
-
 	struct lfs2_mattr attrs;
 	attrs.tag = LFS2_MKTAG(LFS2_TYPE_TAIL + tail->split, 0x3ff, 8);
 	attrs.buffer =  tail->tail;
 	err = lfs2_dir_commit(lfs2, dir, &attrs, sizeof(attrs) / sizeof(struct lfs2_mattr));
-
-//	err = lfs2_dir_commit(lfs2,
-//						  dir,
-//						  LFS2_MKATTRS(
-//								  {
-//						  	  	  	  LFS2_MKTAG(LFS2_TYPE_TAIL + tail->split, 0x3ff, 8),
-//						  	  	  	  tail->tail
-//								  })
-//		  	  	  	  	  );
 
 
 	lfs2_pair_fromle32(tail->tail);
@@ -3260,7 +3239,7 @@ int lfs2_remove(lfs2_t *lfs2, const char *path) {
 	lfs2_mdir_t cwd;
 	lfs2_stag_t tag = lfs2_dir_find(lfs2, &cwd, &path, NULL);
 	if (tag < 0 || lfs2_tag_id(tag) == 0x3ff) {
-		LFS2_TRACE("lfs2_remove -> %"PRId32, (tag < 0) ? tag : LFS2_ERR_INVAL);
+		LFS2_TRACE("lfs2_remove -> %"PRId32, ( (int) tag < 0) ? (int) tag : LFS2_ERR_INVAL);
 		return (tag < 0) ? (int) tag : LFS2_ERR_INVAL;
 	}
 
@@ -3353,9 +3332,9 @@ int lfs2_rename(lfs2_t *lfs2, const char *oldpath, const char *newpath) {
 	// find old entry
 	lfs2_mdir_t oldcwd;
 	lfs2_stag_t oldtag = lfs2_dir_find(lfs2, &oldcwd, &oldpath, NULL);
-	if (oldtag < 0 || lfs2_tag_id(oldtag) == 0x3ff) {
+	if ((int) oldtag < 0 || lfs2_tag_id(oldtag) == 0x3ff) {
 		LFS2_TRACE("lfs2_rename -> %"PRId32,
-				(oldtag < 0) ? oldtag : LFS2_ERR_INVAL);
+				((int) oldtag < 0) ? (int) oldtag : LFS2_ERR_INVAL);
 		return (oldtag < 0) ? (int) oldtag : LFS2_ERR_INVAL;
 	}
 
@@ -3366,7 +3345,7 @@ int lfs2_rename(lfs2_t *lfs2, const char *oldpath, const char *newpath) {
 	if ((prevtag < 0 || lfs2_tag_id(prevtag) == 0x3ff)
 			&& !(prevtag == LFS2_ERR_NOENT && newid != 0x3ff)) {
 		LFS2_TRACE("lfs2_rename -> %"PRId32,
-				(prevtag < 0) ? prevtag : LFS2_ERR_INVAL);
+				((int) prevtag < 0) ? (int) prevtag : LFS2_ERR_INVAL);
 		return (prevtag < 0) ? (int) prevtag : LFS2_ERR_INVAL;
 	}
 
@@ -4219,14 +4198,9 @@ static int lfs2_fs_relocate(lfs2_t *lfs2, const lfs2_block_t oldpair[2],
 
 		struct lfs2_mattr attrs [] = {
 				{LFS2_MKTAG_IF(moveid != 0x3ff, LFS2_TYPE_DELETE, moveid, 0)},
-				{tag, newpair}
+				{(lfs2_tag_t) tag, newpair}
 		};
 		int err = lfs2_dir_commit(lfs2, &parent, attrs,  sizeof(attrs) / sizeof(struct lfs2_mattr) );
-//		int err = lfs2_dir_commit(lfs2, &parent,
-//						LFS2_MKATTRS(
-//								{LFS2_MKTAG_IF(moveid != 0x3ff, LFS2_TYPE_DELETE, moveid, 0)},
-//								{tag, newpair}
-//						));
 
 		lfs2_pair_fromle32(newpair);
 		if (err) {
