@@ -1,10 +1,10 @@
 /*===============================================================================================*/
 /*         >>> Copyright (C) Telit Communications S.p.A. Italy All Rights Reserved. <<<          */
 /*!
-  @file lfs2_debug.h
+  @file az_hw.h
 
-  @brief Project: app_azx_lib_lfs on C:\Telit\SampleApp\m2mb_sample_apps_SDK_1.0.5\ME310G1-W1\AppZoneSampleApps-MAIN_UART\app_azx_lib_lfs\mbed-littlefs\littlefs\lfs2_debug.h.
-
+  @brief Utilities for lfs in AppZone
+  
   @note File created on: Oct 21, 2020
 
   @author NormanAr
