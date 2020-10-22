@@ -17,6 +17,7 @@ extern "C"
 #include "lfs2.h"
 #include "lfs2_util.h"
 
+
 #define memset azx_spi_flash_memset
 #define memcmp azx_spi_flash_memcmp
 
@@ -3777,6 +3778,9 @@ int lfs2_format(lfs2_t *lfs2, const struct lfs2_config *cfg) {
 
 void lfs2_log_info(lfs2_t *lfs2, const struct lfs2_config *cfg)
 {
+	(void) lfs2;
+	(void) cfg;
+
 	LFS2_TRACE("lfs2_info:\r\n"
 			"lfs2: %p, cfg: %p\r\n"
 			".context=%p\r\n"

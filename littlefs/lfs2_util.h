@@ -26,7 +26,9 @@
 #include <inttypes.h>
 
 /* Include files ================================================================================*/
-#include "azx_spi_flash_hw.h"
+
+#include "az_hw.h"
+
 
 #ifndef LFS2_NO_MALLOC
 #include <stdlib.h>
@@ -74,14 +76,13 @@ extern "C"
     debug("%s:%d:trace: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
 #define LFS2_TRACE(...) LFS2_TRACE_(__VA_ARGS__, "")
 #else
-//#define LFS2_TRACE(...)
-#define LFS2_TRACE(a...) 	SPI_FLASH_logFormatted(SPI_FLASH_LOG_LEVEL_INFO, "", "", 0, a)
+#define LFS2_TRACE(...)
+//#define LFS2_TRACE(a...) 	LFS2_logFormatted(LFS2_LOG_LEVEL_INFO, "", "", 0, a)
 #endif
 
 #if !defined(LFS2_NO_DEBUG) && MBED_LFS2_ENABLE_DEBUG
 #define LFS2_DEBUG_(fmt, ...) \
-		SPI_FLASH_logFormatted(SPI_FLASH_LOG_LEVEL_DEBUG, __FUNCTION__, __FILE__, __LINE__, fmt)
-//    printf("%s:%d:debug: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+		LFS2_logFormatted(LFS2_LOG_LEVEL_DEBUG, __FUNCTION__, __FILE__, __LINE__, fmt)
 
 #define LFS2_DEBUG(...) LFS2_DEBUG_(__VA_ARGS__, "")
 #elif !defined(LFS2_NO_DEBUG) && !defined(MBED_LFS2_ENABLE_DEBUG)
@@ -94,8 +95,7 @@ extern "C"
 
 #if !defined(LFS2_NO_WARN) && MBED_LFS2_ENABLE_WARN
 #define LFS2_WARN_(fmt, ...) \
-		SPI_FLASH_logFormatted(SPI_FLASH_LOG_LEVEL_DEBUG, __FUNCTION__, __FILE__, __LINE__, fmt)
-//    printf("%s:%d:warn: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+		LFS2_logFormatted(LFS2_LOG_LEVEL_DEBUG, __FUNCTION__, __FILE__, __LINE__, fmt)
 #define LFS2_WARN(...) LFS2_WARN_(__VA_ARGS__, "")
 #elif !defined(LFS2_NO_WARN) && !defined(MBED_LFS2_ENABLE_WARN)
 #define LFS2_WARN_(fmt, ...) \
@@ -107,8 +107,7 @@ extern "C"
 
 #if !defined(LFS2_NO_ERROR) && MBED_LFS2_ENABLE_ERROR
 #define LFS2_ERROR_(fmt, ...) \
-	SPI_FLASH_logFormatted(SPI_FLASH_LOG_LEVEL_ERROR, __FUNCTION__, __FILE__, __LINE__, fmt)
-//    printf("%s:%d:error: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
+	LFS2_logFormatted(LFS2_LOG_LEVEL_ERROR, __FUNCTION__, __FILE__, __LINE__, fmt)
 #define LFS2_ERROR(...) LFS2_ERROR_(__VA_ARGS__, "")
 #elif !defined(LFS2_NO_ERROR) && !defined(MBED_LFS2_ENABLE_ERROR)
 #define LFS2_ERROR_(fmt, ...) \
@@ -266,8 +265,7 @@ uint32_t lfs2_crc(uint32_t crc, const void *buffer, size_t size);
 // Note, memory must be 64-bit aligned
 static inline void *lfs2_malloc(size_t size) {
 #ifndef LFS2_NO_MALLOC
-//    return malloc(size);
-    return azx_spi_flash_malloc(size);
+    return az_malloc(size);
 #else
     (void)size;
     return NULL;
@@ -277,8 +275,7 @@ static inline void *lfs2_malloc(size_t size) {
 // Deallocate memory, only used if buffers are not provided to littlefs
 static inline void lfs2_free(void *p) {
 #ifndef LFS2_NO_MALLOC
-//    free(p);
-	azx_spi_flash_free(p);
+	az_free(p);
 #else
     (void)p;
 #endif
